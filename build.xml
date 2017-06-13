@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<project name="MazeNet" default="compile">
+
+  <path id="project.class.path">
+    <pathelement path="${java.class.path}" />
+    <pathelement location="build" />
+  </path>
+  
+  <target name="init" >
+    <mkdir dir="build" />
+  </target>
+
+  <target name="compile" depends="init" >
+    <javac classpathref="project.class.path" srcdir="src" destdir="build"
+	   includeAntRuntime="false" />
+  </target>
+
+  <target name="execute" depends="compile">
+    <java fork="true" classpathref="project.class.path" classname="MazeNet" />
+  </target>
+
+  <target name="clean" depends="init">
+    <delete dir="build" />
+  </target>
+</project>
