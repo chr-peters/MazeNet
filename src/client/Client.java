@@ -11,6 +11,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
+import java.util.concurrent.LinkedBlockingDeque;
+
 public class Client {
 
     // used for communication with the server
@@ -23,6 +25,10 @@ public class Client {
     private Marshaller marshaller;
 
     private UTFOutputStream outStream;
+
+    private LinkedBlockingDeque<MazeCom> messageQueue;
+
+    private MessageListener messageListener;
     
     public Client(String ip, int port, String name) throws IOException, JAXBException {
 	this.socket = new Socket(ip, port);
@@ -32,9 +38,15 @@ public class Client {
 	// create XML marshaller
 	this.marshaller = JAXBContext.newInstance(MazeCom.class).createMarshaller();
 	//this.marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+	// create the message queue
+	this.messageQueue = new LinkedBlockingDeque<>();
+
+	// create the messageListener
+	this.messageListener = new MessageListener(this.socket, this.messageQueue);
+	new Thread(this.messageListener).start();
     }
 	
-    public int login() throws IOException, JAXBException {
+    public int login() throws IOException, JAXBException, InterruptedException {
 	MazeCom mazeCom = new MazeCom();
 	mazeCom.setMcType(MazeComType.LOGIN);
 	
@@ -48,15 +60,16 @@ public class Client {
 	this.marshaller.marshal(mazeCom, writer);
 	String message = writer.toString();
 
-	System.out.println(message);
-
 	// send the message to the server
 	this.outStream.writeUTF8(message);
 	this.outStream.flush();
 
-	// TODO wait for reply
+	// get the reply message
+	MazeCom reply = messageQueue.take();
+
+	// TODO check if the message type is correct
 	
-	return 0;
+	return reply.getLoginReplyMessage().getNewID();
     }
 	
     public AwaitMoveMessageType awaitMove() {
