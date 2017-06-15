@@ -1,5 +1,7 @@
 import client.Client;
 
+import generated.*;
+
 import java.util.Scanner;
 
 public class MazeNet {
@@ -11,9 +13,18 @@ public class MazeNet {
 	    int id = client.login();
 	    System.out.println("ID = " + id);
 
-	    // wait to make it possible for the server to respond
-	    Scanner sc = new Scanner(System.in);
-	    sc.nextLine();
+	    // TODO create the AI
+
+	    // beginning of the game loop
+	    while (!client.gameOver()) {
+		
+		AwaitMoveMessageType gameState = client.awaitMove();
+
+		// TODO feed the gameState into the AI
+		// TODO send move to the client
+		// client.sendMove(ai.move(gameState));
+
+	    }
 	} catch (Exception e) {
 	    e.printStackTrace();
 	}
