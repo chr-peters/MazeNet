@@ -98,7 +98,8 @@ public class Client {
 
 	// check if it is an await move message
 	if ( message.getMcType() != MazeComType.AWAITMOVE ) {
-	    // unexpected reply
+	    // unexpected reply, just put the message back into the queue ant throw an exception
+	    this.messageQueue.offerFirst(message);
 	    throw new MazeComException("Unexpected reply type! Expected AWAITMOVE, got "+
 				       message.getMcType().value());
 	}
