@@ -25,6 +25,8 @@ public class MazeNet {
 		// client.sendMove(ai.move(gameState));
 
 	    }
+	    // close the connection
+	    client.close();
 	} catch (Exception e) {
 	    e.printStackTrace();
 	}

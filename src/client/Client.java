@@ -32,6 +32,9 @@ public class Client {
 
     // flag to determine if the game is over
     private boolean isGameOver;
+
+    // id of the client, necessary to send messages to the server
+    private int id;
     
     public Client(String ip, int port, String name) throws IOException, JAXBException {
 	this.socket = new Socket(ip, port);
@@ -50,7 +53,7 @@ public class Client {
 	new Thread(this.messageListener).start();
     }
 	
-    public int login() throws IOException, JAXBException, InterruptedException {
+    public int login() throws IOException, JAXBException, InterruptedException, MazeComException {
 	MazeCom mazeCom = new MazeCom();
 	mazeCom.setMcType(MazeComType.LOGIN);
 	
@@ -64,22 +67,49 @@ public class Client {
 	// get the reply message
 	MazeCom reply = messageQueue.take();
 
-	// TODO check if the message type is correct
-	
-	return reply.getLoginReplyMessage().getNewID();
+	if ( reply.getMcType() == MazeComType.LOGINREPLY ) {
+	    // everything went well
+	    this.id = reply.getLoginReplyMessage().getNewID();
+	    return this.id;
+	} else if ( reply.getMcType() == MazeComType.ACCEPT ) {
+	    // something went wrong, throw an exception containing information about the error
+	    throw new MazeComException("The login was not accepted: ErrorCode = " +
+				       reply.getAcceptMessage().getErrorCode().value());
+	} else if ( reply.getMcType() == MazeComType.DISCONNECT) {
+	    // throw an exception containing information about the disconnect
+
+	    // TODO will the player be able to reconnect? If not, set isGameOver = false
+
+	    throw new MazeComException("Received DISCONNECT message: Name = "+
+				       reply.getDisconnectMessage().getName()+", ErrorCode = " + 
+				       reply.getDisconnectMessage().getErrorCode().value());
+	} else {
+	    // received unexpected message type
+	    // just put the message back into the queue and throw an exception
+	    this.messageQueue.offerFirst(reply);
+	    throw new MazeComException("Unexpected reply type! Expected LOGINREPLY, ACCEPT or DISCONNECT, got "+
+				       reply.getMcType().value());
+	}
     }
 	
-    public AwaitMoveMessageType awaitMove() throws InterruptedException {
+    public AwaitMoveMessageType awaitMove() throws InterruptedException, MazeComException {
 	// take the first element of the messageQueue
 	MazeCom message = messageQueue.take();
 
-	// TODO check if the type is correct
+	// check if it is an await move message
+	if ( message.getMcType() != MazeComType.AWAITMOVE ) {
+	    // unexpected reply
+	    throw new MazeComException("Unexpected reply type! Expected AWAITMOVE, got "+
+				       message.getMcType().value());
+	}
 
 	return message.getAwaitMoveMessage();
     }
 	
-    public void sendMove(MoveMessageType move) throws InterruptedException, IOException, JAXBException {
+    public void sendMove(MoveMessageType move) throws InterruptedException, IOException, 
+						      JAXBException, MazeComException {
 	MazeCom mazeCom = new MazeCom();
+	mazeCom.setId(this.id);
 	mazeCom.setMcType(MazeComType.AWAITMOVE);
 	mazeCom.setMoveMessage(move);
 
@@ -89,7 +119,27 @@ public class Client {
 	// get the reply message
 	MazeCom reply = messageQueue.take();
 
-	// TODO check if the move was correct
+	// error handling
+	if ( reply.getMcType() == MazeComType.ACCEPT && !reply.getAcceptMessage().isAccept() ) {
+	    // the move was not accepted
+	    // throw an exception containing information about the error
+	    throw new MazeComException("The move was not accepted: ErrorCode = " +
+				       reply.getAcceptMessage().getErrorCode().value());
+	} else if (reply.getMcType() == MazeComType.DISCONNECT ) {
+	    // throw an exception containing the information about the disconnect
+
+	    // TODO will the player be able to reconnect? If not, set isGameOver = false
+
+	    throw new MazeComException("Received DISCONNECT message: Name = "+
+				       reply.getDisconnectMessage().getName()+", ErrorCode = " + 
+				       reply.getDisconnectMessage().getErrorCode().value());
+	} else if ( reply.getMcType() != MazeComType.ACCEPT && reply.getMcType() != MazeComType.DISCONNECT ){
+	    // received unexpected message type
+	    // just put the message back into the queue and throw an exception
+	    this.messageQueue.offerFirst(reply);
+	    throw new MazeComException("Unexpected reply type! Expected ACCEPT or DISCONNECT, got "+
+				       reply.getMcType().value());
+	}
 
 	// get the next message and see if it is a win message
 	reply = messageQueue.take();
