@@ -111,7 +111,7 @@ public class Client {
 						      JAXBException, MazeComException {
 	MazeCom mazeCom = new MazeCom();
 	mazeCom.setId(this.id);
-	mazeCom.setMcType(MazeComType.AWAITMOVE);
+	mazeCom.setMcType(MazeComType.MOVE);
 	mazeCom.setMoveMessage(move);
 
 	// send the message to the server

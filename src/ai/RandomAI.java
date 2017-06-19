@@ -16,12 +16,22 @@ public class RandomAI implements AI {
      * last opponent just moved it
      */
     public MoveMessageType move(AwaitMoveMessageType gameState) {
-	PositionType forbidden = gameState.getBoard().getForbidden();
+	PositionType shiftPosition = gameState.getBoard().getForbidden();
 	// test if it is the first move, if it is, just move position (1, 0)
-	if (forbidden == null ) {
-	    forbidden = new PositionType();
-	    forbidden.setRow(0);
-	    forbidden.setCol(1);
+	if (shiftPosition == null ) {
+	    shiftPosition = new PositionType();
+	    shiftPosition.setRow(0);
+	    shiftPosition.setCol(1);
+	} else {
+	    if (shiftPosition.getRow() == 0) {
+		shiftPosition.setRow(6);
+	    } else if (shiftPosition.getRow() == 6) {
+		shiftPosition.setRow(0);
+	    } else if (shiftPosition.getCol() == 0) {
+		shiftPosition.setCol(6);
+	    } else {
+		shiftPosition.setCol(0);
+	    }
 	}
 
 	PositionType pinPosition = new PositionType();
@@ -39,7 +49,7 @@ public class RandomAI implements AI {
 
 	// create the move
 	MoveMessageType move = new MoveMessageType();
-	move.setShiftPosition(forbidden);
+	move.setShiftPosition(shiftPosition);
 	move.setNewPinPos(pinPosition);
 	move.setShiftCard(gameState.getBoard().getShiftCard());
 

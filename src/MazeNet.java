@@ -12,7 +12,7 @@ public class MazeNet {
 	    Client client = new Client("localhost", 5123, "Abel");
 
 	    int id = client.login();
-	    System.out.println("ID = " + id);
+	    System.out.println("Started the game with ID =  " + id);
 
 	    AI ai = new RandomAI(id);
 
