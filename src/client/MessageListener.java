@@ -47,8 +47,10 @@ public class MessageListener implements Runnable {
 		MazeCom mazeCom = (MazeCom) this.unmarshaller.unmarshal(stringReader);
 		// insert the received message into the queue
 		messageQueue.offerLast(mazeCom);
-	    } catch (IOException | JAXBException e) {
+	    } catch (JAXBException e) {
 		e.printStackTrace();
+	    } catch (IOException e) {
+		this.stop();
 	    }
 	}
     }
