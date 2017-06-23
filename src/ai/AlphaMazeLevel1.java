@@ -12,9 +12,23 @@ public class AlphaMazeLevel1 implements AI {
     // the ID of the player
     private int playerID;
 
+    // how much noise is added to each evaluation?
+    private double noiseFactor;
+
     public AlphaMazeLevel1(int playerID, BoardEvaluator evaluator) {
 	this.evaluator = evaluator;
 	this.playerID = playerID;
+	this.noiseFactor = 0;
+    }
+
+    /**
+     * @param noiseFactor How much noise is added to each evaluation? The noise
+     *                    is factored in like this: score = eval(board) + noiseFactor*Math.random()
+     */
+    public AlphaMazeLevel1(int playerID, BoardEvaluator evaluator, double noiseFactor) {
+	this.evaluator = evaluator;
+	this.playerID = playerID;
+	this.noiseFactor = noiseFactor;
     }
 
     /**
@@ -69,7 +83,7 @@ public class AlphaMazeLevel1 implements AI {
 			    curBoard.movePlayer(oldPos, curPosition, this.playerID);
 			
 			    // now evaluate the board
-			    double curScore = this.evaluator.evaluate(curBoard, this.playerID, gameState.getTreasure());
+			    double curScore = this.evaluator.evaluate(curBoard, this.playerID, gameState.getTreasure()) + noiseFactor * Math.random();
 			
 			    // now move the player back to where he was
 			    curBoard.movePlayer(curPosition, oldPos, this.playerID);
