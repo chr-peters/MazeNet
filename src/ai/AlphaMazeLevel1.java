@@ -44,40 +44,42 @@ public class AlphaMazeLevel1 implements AI {
 		    shiftPosition.setRow(row);
 		    shiftPosition.setCol(col);
 
-		    // create a temporary moveMessage
-		    MoveMessageType curMove = new MoveMessageType();
-		    curMove.setShiftCard(gameState.getBoard().getShiftCard());
-		    curMove.setShiftPosition(shiftPosition);
+		    // iterate over all possible orientations of the shift card
+		    for(Card shiftCard: new Card(gameState.getBoard().getShiftCard()).getPossibleRotations()){
 
-		    // TODO iterate over all possible rotations of the shift card
+			// create a temporary moveMessage
+			MoveMessageType curMove = new MoveMessageType();
+			curMove.setShiftCard(shiftCard);
+			curMove.setShiftPosition(shiftPosition);
 
-		    // create a temporary board
-		    Board curBoard = new Board(gameState.getBoard());
+			// create a temporary board
+			Board curBoard = new Board(gameState.getBoard());
 
-		    // to determine all reachable positions, first apply the shift only
-		    curBoard.proceedShift(curMove);
+			// to determine all reachable positions, first apply the shift only
+			curBoard.proceedShift(curMove);
 
-		    // get the old position of the player for later calculations
-		    PositionType oldPos = curBoard.findPlayer(this.playerID);
+			// get the old position of the player for later calculations
+			PositionType oldPos = curBoard.findPlayer(this.playerID);
 
-		    // now get all the reachable positions
-		    List<Position> reachablePositions = curBoard.getAllReachablePositions(oldPos);
+			// now get all the reachable positions
+			List<Position> reachablePositions = curBoard.getAllReachablePositions(oldPos);
 		    
-		    // iterate over each reachable position and evaluate the corresponding board
-		    for (Position curPosition: reachablePositions) {
-			curBoard.movePlayer(oldPos, curPosition, this.playerID);
+			// iterate over each reachable position and evaluate the corresponding board
+			for (Position curPosition: reachablePositions) {
+			    curBoard.movePlayer(oldPos, curPosition, this.playerID);
 			
-			// now evaluate the board
-			double curScore = this.evaluator.evaluate(curBoard, this.playerID, gameState.getTreasure());
+			    // now evaluate the board
+			    double curScore = this.evaluator.evaluate(curBoard, this.playerID, gameState.getTreasure());
 			
-			// now move the player back to where he was
-			curBoard.movePlayer(curPosition, oldPos, this.playerID);
+			    // now move the player back to where he was
+			    curBoard.movePlayer(curPosition, oldPos, this.playerID);
 			
-			// if a new highscore was found, update the current best move
-			if (curScore > currentBestScore) {
-			    curMove.setNewPinPos(curPosition);
-			    currentBestMove = curMove;
-			    currentBestScore = curScore;
+			    // if a new highscore was found, update the current best move
+			    if (curScore > currentBestScore) {
+				curMove.setNewPinPos(curPosition);
+				currentBestMove = curMove;
+				currentBestScore = curScore;
+			    }
 			}
 		    }
 		}
