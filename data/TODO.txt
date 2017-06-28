@@ -1,0 +1,12 @@
+Was noch erledigt werden muss:
+==============================
+
+- IP, Port und KI ueber Kommandozeile eingeben koennen (Niklas)
+- Menschenspielbare KI
+- Funktion die den Schatz der Gegner erraet
+- Simulator fuer Spiele zwischen AIs
+- Client auf SSL umstellen (KingMarius)
+
+Was bereits erledigt wurde:
+============================
+- Manhattan in WallEvaluator entfernen (Niklas)
