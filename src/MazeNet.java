@@ -14,9 +14,8 @@ public class MazeNet {
 	    int id = client.login();
 	    System.out.println("Started the game with ID =  " + id);
 
-	    // 0.4 is the optional noiseFactor
-	    // AI ai = new AlphaMazeLevel1(id, new WallEvaluator(), 0.4);
-	    AI ai = new AlphaMazeLevel1(id, new WallEvaluator());
+	    // 0.1 is the optional noiseFactor
+	    AI ai = new AlphaMazeLevel1(id, new WallEvaluator(), 0.1);
 
 	    // beginning of the game loop
 	    while (!client.gameOver()) {

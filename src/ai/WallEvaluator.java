@@ -80,13 +80,6 @@ public class WallEvaluator implements BoardEvaluator {
     }
 
     /**
-     * Calculates the distance between player and treasure
-     */
-    private int distance(Position player, PositionType treasure) {
-	return Math.abs(player.getRow()-treasure.getRow())+Math.abs(player.getCol()-treasure.getCol());
-    }
-
-    /**
      * Assigns each board a score based on walls between player and treasure and distance between them
      */
     public double evaluate(Board board, int playerID, TreasureType treasure) {
@@ -94,12 +87,12 @@ public class WallEvaluator implements BoardEvaluator {
 	Position player_pos = board.findPlayer(playerID);
 	PositionType treasure_pos = board.findTreasure(treasure);
 	if(player_pos.equals(treasure_pos)) {
-	    return 1000;
+	    return 14;
 	} else if(treasure_pos==null) {
 	    return 0;
 	} else {
 	    number_obstacles(board, player_pos, treasure_pos, new ArrayList<>(), 0);
-	    return 100-this.minWalls-distance(player_pos, treasure_pos);
+	    return 13-0.5*this.minWalls;
 	}
     }
 
