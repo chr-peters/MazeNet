@@ -137,7 +137,8 @@ public class Board extends BoardType {
                 .nextInt(4) * 90), TreasureType.SYM_12));
 
         //if (!Settings.TESTBOARD)
-	//  Collections.shuffle(freeCards);
+	// always create a random board
+	Collections.shuffle(freeCards);
 
         int k = 0;
         for (int i = 1; i < 7; i += 2) {

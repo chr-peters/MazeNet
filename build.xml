@@ -22,6 +22,10 @@
     <java fork="true" classpathref="project.class.path" classname="MazeNet" />
   </target>
 
+  <target name="execute-simulator" depends="compile">
+    <java fork="true" classpathref="project.class.path" classname="ai.GameSimulator" />
+  </target>
+
   <target name="clean" depends="init">
     <delete dir="build" />
   </target>
