@@ -7,6 +7,8 @@ import java.net.Socket;
 import java.io.IOException;
 import java.io.StringWriter;
 
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -16,7 +18,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 public class Client {
 
     // used for communication with the server
-    private Socket socket;
+    private SSLSocket socket;
 
     // the name of the intelligence
     private String name;
@@ -37,7 +39,15 @@ public class Client {
     private int id;
     
     public Client(String ip, int port, String name) throws IOException, JAXBException {
-	this.socket = new Socket(ip, port);
+    // setup truststore to verify server-certificate
+    System.setProperty("javax.net.ssl.trustStore", "./data/ssl/truststore.jks");
+    System.setProperty("javax.net.ssl.trustStorePassword", "transformers");
+	
+    // create sslSocket
+    System.out.println("Baue Verbindung auf mit " + ip + " Port: " + port);
+    this.socket = (SSLSocket) SSLSocketFactory.getDefault().createSocket(ip, port);
+    
+    //this.socket = new Socket(ip, port);
 	this.name = name;
 	this.outStream = new UTFOutputStream(this.socket.getOutputStream());
 	this.isGameOver = false;
