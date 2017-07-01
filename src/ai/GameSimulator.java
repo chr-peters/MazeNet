@@ -17,10 +17,26 @@ public class GameSimulator {
 	players.put(1, new AlphaMazeLevel1(1, new ManhattanEvaluator(), 0.1));
 	players.put(2, new AlphaMazeLevel1(2, new WallEvaluator(), 0.1));
 
-	// simulate a game and print the winner
+	// simulate n games
+	int numberOfGames = 200;
+	int ai1Wins = 0;
+	int ai2Wins = 0;
 	GameSimulator simulator = new GameSimulator();
-	int winner = simulator.simulate(players);
-	System.out.println("The winner is "+winner+"!");
+	for (int i = 0; i < numberOfGames; i++) {
+	    if (simulator.simulate(players) == 1) {
+		ai1Wins++;
+	    } else {
+		ai2Wins++;
+	    }
+	    if(i%10==0) {
+		System.out.println(i/(double)numberOfGames*100+"% of the simulation completed.");
+	    }
+	}
+	
+	// print the results of the simulation
+	System.out.println("The MahattanEvaluator wins "+ai1Wins/(double)numberOfGames*100+"% of the time.");
+	System.out.println("The WallEvaluator wins "+ai2Wins/(double)numberOfGames*100+"% of the time.");
+	System.out.println("Games played: "+numberOfGames);
     }
 
     /**
@@ -48,7 +64,7 @@ public class GameSimulator {
 	    treasuresToGo.put(id, 24/players.size() + 1);
 	}
 	// simulate the game
-	return simulate(players, new Board(), currentTreasures, Collections.emptyList(), treasuresToGo, 1);
+	return simulate(players, new Board(), currentTreasures, new ArrayList<>(), treasuresToGo, 1);
     }
 
     /**
@@ -95,6 +111,9 @@ public class GameSimulator {
 	    for (int i=0; i<players.size(); i++) {
 		int currentID = Math.max((nextMove + i) % (players.size()+1), 1);
 		
+		// update the current treasure on the board
+		board.setTreasure(playerStacks.get(currentID).peek());
+		
 		// create the AwaitMoveMessageType, use copies for safety reasons
 		AwaitMoveMessageType msg = new AwaitMoveMessageType();
 		msg.setBoard(new Board(board));
@@ -105,8 +124,25 @@ public class GameSimulator {
 		    tmp.setTreasures(playerStacks.get(id).size());
 		    tmpTGT.add(tmp);
 		}
-		// msg.setTreasuresToGo(tmpTGT);
-		// TODO extend AwaitMoveMessageType to add treasuresToGo
+		msg.getTreasuresToGo().addAll(tmpTGT);
+		msg.getFoundTreasures().addAll(foundTreasures);
+		msg.setTreasure(playerStacks.get(currentID).peek());
+
+		// get the move from the current player
+		MoveMessageType move = players.get(currentID).move(msg);
+
+		// simulate the move on the board and test if the player has found his treasure
+		if (board.proceedTurn(move, currentID)) {
+		    // add the treasure to the found treasures
+		    foundTreasures.add(playerStacks.get(currentID).pop());
+		    // test if the player has won
+		    if (playerStacks.get(currentID).empty()) {
+			// we have a winner
+			return currentID;
+		    }
+		}
+		//System.out.println("Stack size of player "+currentID+": "+playerStacks.get(currentID).size());
+		//System.out.println(board);
 	    }
 	}
     }
@@ -139,5 +175,4 @@ public class GameSimulator {
         allTreasures.add(TreasureType.SYM_24);
 	return allTreasures;
     }
-    
 }
