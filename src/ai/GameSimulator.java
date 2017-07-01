@@ -8,35 +8,152 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Collections;
 import java.util.Stack;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
 
 public class GameSimulator {
 
     public static void main(String args[]) {
 	// create the ais
 	Map<Integer, AI> players = new HashMap<>();
-	players.put(1, new AlphaMazeLevel1(1, new ManhattanEvaluator(), 0.1));
-	players.put(2, new AlphaMazeLevel1(2, new WallEvaluator(), 0.1));
+	players.put(1, new AlphaMazeLevel1(1, new WallEvaluator(), 0.1));
+	players.put(2, new AlphaMazeLevel1(2, new ManhattanEvaluator(), 0.1));
 
-	// simulate n games
-	int numberOfGames = 200;
-	int ai1Wins = 0;
-	int ai2Wins = 0;
 	GameSimulator simulator = new GameSimulator();
-	for (int i = 0; i < numberOfGames; i++) {
-	    if (simulator.simulate(players) == 1) {
-		ai1Wins++;
-	    } else {
-		ai2Wins++;
+	// simulate n games
+	System.out.println(simulator.simulateN(1000, players));
+    }
+
+    /**
+     * Simulate N games in parallel.
+     */
+    public Map<Integer, Integer> simulateN(int n, Map<Integer, AI> players) {
+	// first, give each player a random treasure to look for
+	Map<Integer, TreasureType> currentTreasures = new HashMap<>();
+	// a list of all the treasures
+	List<TreasureType> allTreasures = GameSimulator.getAllTreasures();
+	Collections.shuffle(allTreasures);
+	for (int id: players.keySet()) {
+	    // get the first (ramdom due to shuffle) treasure type and add it to the map
+	    currentTreasures.put(id, allTreasures.get(0));
+	    // remove the treasure from the available list
+	    allTreasures.remove(0);
+	}
+	// each player still has to find the same amount of treasures
+	Map<Integer, Integer> treasuresToGo = new HashMap<>();
+	for (int id: players.keySet()) {
+	    treasuresToGo.put(id, 24/players.size() + 1);
+	}
+	// simulate the game
+	return simulateN(n, players, new Board(), currentTreasures, new ArrayList<>(), treasuresToGo, 1);
+    }
+
+    /**
+     * Simulate N games, the simulation is run parallel.
+     */
+    public Map<Integer, Integer> simulateN(int n, Map<Integer, AI> players, Board board, 
+					  Map<Integer, TreasureType> currentTreasures, 
+					  List<TreasureType> foundTreasures,
+					  Map<Integer, Integer> treasuresToGo, int nextMove) {
+	// a simulator will be run on every core
+	int cores = Runtime.getRuntime().availableProcessors();
+
+	// initialize the threadpool
+	ExecutorService threadPool = Executors.newFixedThreadPool(cores);
+	
+	// this is a class for simulating n games
+	class Simulator implements Callable<Map<Integer, Integer>> {
+	    
+	    private int numberOfGames;
+	    private Map<Integer, AI> players;
+	    private Board board;
+	    private Map<Integer, TreasureType> currentTreasures;
+	    private List<TreasureType> foundTreasures;
+	    private Map<Integer, Integer> treasuresToGo;
+	    private int nextMove;
+
+	    public Simulator (int numberOfGames, Map<Integer, AI> players, Board board, 
+			      Map<Integer, TreasureType> currentTreasures, 
+			      List<TreasureType> foundTreasures,
+			      Map<Integer, Integer> treasuresToGo, int nextMove) {
+		this.numberOfGames = numberOfGames;
+		this.players = players;
+		this.board = board;
+		this.currentTreasures = currentTreasures;
+		this.foundTreasures = foundTreasures;
+		this.treasuresToGo = treasuresToGo;
+		this.nextMove = nextMove;
 	    }
-	    if(i%10==0) {
-		System.out.println(i/(double)numberOfGames*100+"% of the simulation completed.");
+	    
+	    /**
+	     * Run numberOfGames games and put the results in the map.
+	     *
+	     * @return PlayerID -> Games won
+	     */
+	    @Override
+	    public Map<Integer, Integer> call() {
+		Map<Integer, Integer> res = new HashMap<>();
+		// initialize the result
+		for (int id: players.keySet()) {
+		    res.put(id, 0);
+		}
+		// run the simulations
+		for (int i = 0; i<numberOfGames; i++) {
+		    // initialize the parameters of the simulator as they will be changed inside
+		    Board tmpBoard = new Board(this.board);
+		    Map<Integer, TreasureType> tmpCurrentTreasures = new HashMap<>();
+		    tmpCurrentTreasures.putAll(this.currentTreasures);
+		    List<TreasureType> tmpFoundTreasures = new ArrayList<>();
+		    tmpFoundTreasures.addAll(this.foundTreasures);
+		    Map<Integer, Integer> tmpTreasuresToGo = new HashMap<>();
+		    tmpTreasuresToGo.putAll(this.treasuresToGo);
+		    
+		    // simulate a game
+		    int winnerID = GameSimulator.this.simulate(players, tmpBoard, tmpCurrentTreasures,
+							       tmpFoundTreasures, tmpTreasuresToGo, nextMove);
+		    
+		    // update the results
+		    res.put(winnerID, res.get(winnerID)+1);
+		    
+		}
+		return res;
 	    }
 	}
 	
-	// print the results of the simulation
-	System.out.println("The MahattanEvaluator wins "+ai1Wins/(double)numberOfGames*100+"% of the time.");
-	System.out.println("The WallEvaluator wins "+ai2Wins/(double)numberOfGames*100+"% of the time.");
-	System.out.println("Games played: "+numberOfGames);
+	// how many games games for each thread?
+	int gamesPerThread = n/cores;
+
+	// now run the simulations in parallel
+	List<Future<Map<Integer, Integer>>> simulationResults = new ArrayList<>(cores);
+	for (int i = 0; i<cores; i++) {
+	    simulationResults.add(threadPool.submit(new Simulator(gamesPerThread, players, board, 
+								  currentTreasures, foundTreasures,
+								  treasuresToGo, nextMove)));
+	}
+
+	// now get the results
+	Map<Integer, Integer> res = new HashMap<>();
+	for (int id: players.keySet()) {
+	    res.put(id, 0);
+	}
+	for (Future<Map<Integer, Integer>> f: simulationResults) {
+	    try {
+		for(Map.Entry<Integer, Integer> curRes: f.get().entrySet()) {
+		    res.put(curRes.getKey(), res.get(curRes.getKey()) + curRes.getValue());
+		}
+	    } catch (InterruptedException | ExecutionException e) {
+		// do nothing
+	    }
+	}
+
+	// shut down the thread pool
+	threadPool.shutdown();
+
+	// return the results
+	return res;
     }
 
     /**
