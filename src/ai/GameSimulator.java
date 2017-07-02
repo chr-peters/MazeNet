@@ -19,12 +19,13 @@ public class GameSimulator {
     public static void main(String args[]) {
 	// create the ais
 	Map<Integer, AI> players = new HashMap<>();
-	players.put(1, new AlphaMazeLevel1(1, new WallEvaluator(), 0.1));
-	players.put(2, new AlphaMazeLevel1(2, new ManhattanEvaluator(), 0.1));
+	players.put(1, new AlphaMazeLevel1(1, new ManhattanEvaluator(), 0.1));
+	players.put(2, new AlphaMazeLevel2(2, new ManhattanEvaluator(), new ManhattanEvaluator(),
+					   10, 100,  0.1));
 
 	GameSimulator simulator = new GameSimulator();
 	// simulate n games
-	System.out.println(simulator.simulateN(1000, players));
+	System.out.println(simulator.simulateN(20, players));
     }
 
     /**

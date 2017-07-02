@@ -169,11 +169,49 @@ public class AlphaMazeLevel2 implements AI {
 		}
 	    }
 
-	    // TODO do the move to get the starting board of the simulation
-	    // test if a player is on a treasure to update the parameters accordingly
-	    
+	    // get the board resulting from the move
+	    Board tmpBoard = new Board(gameState.getBoard());
+	    tmpBoard.setTreasure(gameState.getTreasure());
+	    if (tmpBoard.proceedTurn(curNode.move, this.playerID)) {
+		// the player has found his treasure by doing this move
+		// update the parameters accordingly
+		if (treasuresToGo.get(this.playerID) == 1) {
+		    // it was the last treasure
+		    // the game is won, no need to simulate any longer
+		    return curNode.move;
+		}
+		if (treasuresToGo.get(this.playerID) == 2) {
+		    // the new destination of the player is his starting position
+		    currentTreasures.put(this.playerID, TreasureType.fromValue("Start0"+this.playerID));
+		} else {
+		    // it was not the last treasure, so assign a new one
+		    currentTreasures.put(this.playerID, availableTreasures.get(0));
+		    availableTreasures.remove(0);
+		}
+		treasuresToGo.put(this.playerID, treasuresToGo.get(this.playerID)-1);
+		foundTreasures.add(gameState.getTreasure());
+	    }
+
+	    // TODO what happens if another player ends up on his treasure due to the move?
+
+	    // now update the value of curNode to match the number of wins from the simulation
+	    Map<Integer, Integer> simulationResults = this.simulator.simulateN(simulationsPerNode, players,
+									       tmpBoard, currentTreasures,
+									       foundTreasures, treasuresToGo,
+									       nextPlayer);
+	    curNode.value = simulationResults.get(this.playerID);
 	}
-	return bestMoves.get(0).move;
+
+	// now search for the best move
+	double bestScore = Double.MIN_VALUE;
+	int bestIndex = 0;
+	for (int i = 0; i < bestMoves.size(); i++) {
+	    if (bestMoves.get(i).value > bestScore) {
+		bestIndex = i;
+		bestScore = bestMoves.get(i).value;
+	    }
+	}
+	return bestMoves.get(bestIndex).move;
     }
 
     private static class Node {
