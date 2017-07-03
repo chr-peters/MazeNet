@@ -93,6 +93,16 @@ public class AlphaMazeLevel2 implements AI {
 
 		// iterate over all reachable positions and evaluate the corresponding board
 		for (Position curPosition: reachablePositions) {
+
+		    // This is a special case: if a player shifted the card so that he could reach
+		    // his treasure and then does not walk onto it, it just doesn't make sense.
+		    // This possibility is eliminated here.
+		    PositionType treasurePosition = curBoard.findTreasure(gameState.getTreasure());
+		    if (treasurePosition != null && reachablePositions.contains(new Position(treasurePosition)) &&
+			!curPosition.equals(new Position(treasurePosition))){
+			continue;
+		    }
+		    
 		    curBoard.movePlayer(oldPos, curPosition, this.playerID);
 
 		    // now evaluate the board
