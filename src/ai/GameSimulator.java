@@ -21,11 +21,11 @@ public class GameSimulator {
 	Map<Integer, AI> players = new HashMap<>();
 	players.put(1, new AlphaMazeLevel1(1, new ManhattanEvaluator(), 0.1));
 	players.put(2, new AlphaMazeLevel2(2, new ManhattanEvaluator(), new ManhattanEvaluator(),
-					   10, 100,  0.1));
+					   10, 300,  0.1));
 
 	GameSimulator simulator = new GameSimulator();
 	// simulate n games
-	System.out.println(simulator.simulateN(20, players));
+	System.out.println(simulator.simulate(players));
     }
 
     /**
@@ -38,7 +38,7 @@ public class GameSimulator {
 	List<TreasureType> allTreasures = GameSimulator.getAllTreasures();
 	Collections.shuffle(allTreasures);
 	for (int id: players.keySet()) {
-	    // get the first (ramdom due to shuffle) treasure type and add it to the map
+	    // get the first (random due to shuffle) treasure type and add it to the map
 	    currentTreasures.put(id, allTreasures.get(0));
 	    // remove the treasure from the available list
 	    allTreasures.remove(0);
