@@ -43,7 +43,7 @@ public class Client {
     System.setProperty("javax.net.ssl.trustStorePassword", "transformers");
 	
     // create sslSocket
-    this.socket = SSLSocketFactory.getDefault().createSocket(ip, 5124);
+    this.socket = SSLSocketFactory.getDefault().createSocket(ip, port);
     
     // socket without SSL: this.socket = new Socket(ip, port), where port = 5123 by default
 	this.name = name;
