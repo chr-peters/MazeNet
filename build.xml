@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <project name="MazeNet" default="compile">
+  <!-- set global properties for this build -->
+  <property name="author.prj" value="Das Abelsche Softwarehaus" />
+  <property name="project.prj.uc" value="MazeNet" />
+  <property name="build.path" value="./build/" />
+
+  <!-- set the current time, needed by the manifest -->
+  <tstamp>
+    <format property="timestamp.isoformat"
+            pattern="yyyy-MM-dd'T'HH:mm:s" locale="de" />
+  </tstamp>
 
   <path id="project.class.path">
     <pathelement path="${java.class.path}" />
@@ -28,5 +38,21 @@
 
   <target name="clean" depends="init">
     <delete dir="build" />
+  </target>
+
+  <!-- create the manifest -->
+  <target name="create-manifest" depends="init">
+    <manifest file="${build.path}/MANIFEST.MF">
+      <attribute name="Built-By" value="${author.prj}" />
+      <attribute name="Build-On" value="${timestamp.isoformat}" />
+      <attribute name="Main-Class" value="${project.prj.uc}" />
+    </manifest>
+  </target>
+
+  <!-- create a runnable jar file -->
+  <target name="archive-application" depends="compile, create-manifest">
+    <jar destfile="${build.path}/das_abelsche-softwarehaus.jar" manifest="${build.path}/MANIFEST.MF" >
+      <fileset dir="${build.path}" excludes="**/testcases/**" />
+    </jar>
   </target>
 </project>
