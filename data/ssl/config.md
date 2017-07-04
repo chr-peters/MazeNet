@@ -26,7 +26,7 @@ PORT = 5123
 
 # SSL Settings
 SSL_PORT = 5124
-SSL_CERT_STORE=./keystore.jks
+SSL_CERT_STORE=./our_keystore.jks
 SSL_CERT_STORE_PASSWD=transformers
 
 # Wenn TESTBOARD = true ist, dann ist das Spielbrett bei jedem Start identisch (zum Debugging)

@@ -7,7 +7,6 @@ import java.net.Socket;
 import java.io.IOException;
 import java.io.StringWriter;
 
-import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -18,7 +17,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 public class Client {
 
     // used for communication with the server
-    private SSLSocket socket;
+    private Socket socket;
 
     // the name of the intelligence
     private String name;
@@ -44,10 +43,9 @@ public class Client {
     System.setProperty("javax.net.ssl.trustStorePassword", "transformers");
 	
     // create sslSocket
-    System.out.println("Baue Verbindung auf mit " + ip + " Port: " + port);
-    this.socket = (SSLSocket) SSLSocketFactory.getDefault().createSocket(ip, port);
+    this.socket = SSLSocketFactory.getDefault().createSocket(ip, 5124);
     
-    //this.socket = new Socket(ip, port);
+    // socket without SSL: this.socket = new Socket(ip, port), where port = 5123 by default
 	this.name = name;
 	this.outStream = new UTFOutputStream(this.socket.getOutputStream());
 	this.isGameOver = false;
