@@ -539,11 +539,11 @@ public class Board extends BoardType {
         return null;
     }
 
-    // public void setTreasure(TreasureType t) {
-    //     currentTreasure = t;
-    // }
+    public void setTreasure(TreasureType t) {
+        currentTreasure = t;
+    }
 
-    // public TreasureType getTreasure() {
-    //     return currentTreasure;
-    // }
+    public TreasureType getTreasure() {
+        return currentTreasure;
+    }
 }
