@@ -1,25 +1,14 @@
-# Konfigurieren des Mazenet-Servers
+# Konfiguration des Mazenet-Servers
 
-Falls benötigt, kann man beim Aufruf des Mazenet-Servers mit -c eine Configdatei angeben, um die Standardconfig zu überschreiben.
-
-```
-usage: java -jar maze-server.jar [options]
-Available Options:
- -c <arg>   path to property file for configuration
- -h         displays this help message
-```
-
-Eine Beispielconfigdatei ist folgende:
-```
-# Startwert fuer die Spieleranzahl kann aber noch veraendert werden
+# Startwert fuer die Spieleranzahl, kann aber noch veraendert werden
 NUMBER_OF_PLAYERS = 1
 LOCALE = de
 
-# Die Zeit in Milisekunden, nach der ein Logintimeout eintritt LOGINTIMEOUT = 60000 entspricht einer Minute
+# Die Zeit in Millisekunden, nach der ein Logintimeout eintritt; LOGINTIMEOUT = 60000 entspricht einer Minute
 LOGINTIMEOUT = 120000
 LOGINTRIES = 3
 SENDTIMEOUT = 30000
-# Die maximale Anzahl der Versuche einen gueltigen Zug zu uebermitteln
+# Die maximale Anzahl der Versuche, einen gueltigen Zug zu uebermitteln
 MOVETRIES = 3
 
 PORT = 5123
@@ -34,15 +23,13 @@ TESTBOARD = true
 # Hiermit lassen sich die Testfaelle anpassen (Pseudozufallszahlen)
 TESTBOARD_SEED = 0
 
-# Die Zeit in Milisekunden, die die Animation eines Zug (die Bewegung des Pins) benoetigen soll
+# Die Zeit in Millisekunden, welche die Animation eines Zug (die Bewegung des Pins) benoetigen soll
 MOVEDELAY = 400
-# Die Zeit in Milisekunden, die das Einschieben der Shiftcard dauern soll
+# Die Zeit in Millisekunden, die das Einschieben der Shiftcard dauern soll
 # SHIFTDELAY = 500
-SHIFTDELAY = 700
+SHIFTDELAY = 500
 # USERINTERFACE definiert die zu verwendende GUI Gueltige Werte: BetterUI, MazeFX, CLIUI
-USERINTERFACE = BetterUI
+USERINTERFACE = MazeFX
 
 # Maximale Laenge des Spielernamens
 MAX_NAME_LENGTH = 30
-```
-Hier wird StandardUI auf die ältere UI BetterUI gewechselt.
