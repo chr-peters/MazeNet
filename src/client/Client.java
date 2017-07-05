@@ -8,6 +8,13 @@ import java.io.IOException;
 import java.io.StringWriter;
 
 import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.SSLContext;
+import java.security.KeyStore;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.TrustManager;
+
+import java.io.InputStream;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -38,14 +45,23 @@ public class Client {
     private int id;
     
     public Client(String ip, int port, String name) throws IOException, JAXBException {
-    // setup truststore to verify server-certificate
-    System.setProperty("javax.net.ssl.trustStore", "./data/ssl/truststore.jks");
-    System.setProperty("javax.net.ssl.trustStorePassword", "transformers");
+	// setup truststore to verify server-certificate
+	//System.setProperty("javax.net.ssl.trustStore", "./data/ssl/truststore.jks");
+	//System.setProperty("javax.net.ssl.trustStorePassword", "transformers");
+
+	try {
+
+	    this.initSSL();
+
+	    // create sslSocket
+	    this.socket = SSLSocketFactory.getDefault().createSocket(ip, port);
+
+	} catch (Exception e) {
+	    System.out.println("Could not initialize ssl, using normal socket instead.");
+	    // something went wrong so just dont use ssl
+	    this.socket = new Socket(ip, 5123);
+	}
 	
-    // create sslSocket
-    this.socket = SSLSocketFactory.getDefault().createSocket(ip, port);
-    
-    // socket without SSL: this.socket = new Socket(ip, port), where port = 5123 by default
 	this.name = name;
 	this.outStream = new UTFOutputStream(this.socket.getOutputStream());
 	this.isGameOver = false;
@@ -59,6 +75,31 @@ public class Client {
 	// create the messageListener
 	this.messageListener = new MessageListener(this.socket, this.messageQueue);
 	new Thread(this.messageListener).start();
+    }
+
+    /**
+     * Initializes the SSL context with the truststore found inside of the jar.
+     */
+    public void initSSL() throws Exception {
+	// get the file containing the truststore
+	InputStream trustStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("data/ssl/truststore.jks");
+	KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+
+	// load the truststore.jks file
+	trustStore.load(trustStream, (new String("transformers")).toCharArray());
+
+	// initialize a trust manager factory with the trusted store
+	TrustManagerFactory trustFactory = 
+	    TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());    
+	trustFactory.init(trustStore);
+
+	// get the trust managers from the factory
+	TrustManager[] trustManagers = trustFactory.getTrustManagers();
+
+	// initialize an ssl context to use these managers and set as default
+	SSLContext sslContext = SSLContext.getInstance("SSL");
+	sslContext.init(null, trustManagers, null);
+	SSLContext.setDefault(sslContext);
     }
 	
     public int login() throws IOException, JAXBException, InterruptedException, MazeComException {
