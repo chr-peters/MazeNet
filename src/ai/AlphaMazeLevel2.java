@@ -28,6 +28,9 @@ public class AlphaMazeLevel2 implements AI {
     // how much noise is added to each evaluation of the heuristic
     private double noiseFactor;
 
+    // how many moves are simulated in each simulation
+    private int movesPerSimulation;
+
     // the instance of the simulator
     private GameSimulator simulator;
 
@@ -38,17 +41,20 @@ public class AlphaMazeLevel2 implements AI {
      * @param simulationEvaluator This is the Evaluator that is used in the simulations
      * @param nodeCount           The amount of boards that are used as a basis for a simulation
      * @param simulationsPerNode  How many games are simulated on each node considered
+     * @param movesPerSimulation  How many moves are simulated in each simulation
      * @param noiseFactor         How much noise is added to each evaluation of the evaluators
      */
     public AlphaMazeLevel2(int playerID, BoardEvaluator evaluator, BoardEvaluator simulationEvaluator, 
-			   int nodeCount, int simulationsPerNode, double noiseFactor) {
+			   int nodeCount, int simulationsPerNode, int movesPerSimulation, double noiseFactor) {
 	this.playerID = playerID;
 	this.evaluator = evaluator;
 	this.simulationEvaluator = simulationEvaluator;
 	this.nodeCount = nodeCount;
 	this.simulationsPerNode = simulationsPerNode;
 	this.noiseFactor = noiseFactor;
+	this.movesPerSimulation = movesPerSimulation;
 	this.simulator = new GameSimulator();
+	System.out.println("Started AI running on "+Runtime.getRuntime().availableProcessors()+" cores.");
     }
 
     /**
@@ -208,7 +214,7 @@ public class AlphaMazeLevel2 implements AI {
 	    Map<Integer, Integer> simulationResults = this.simulator.simulateN(simulationsPerNode, players,
 									       tmpBoard, currentTreasures,
 									       foundTreasures, treasuresToGo,
-									       nextPlayer);
+									       nextPlayer, movesPerSimulation);
 	    curNode.value = simulationResults.get(this.playerID);
 	}
 
@@ -221,6 +227,9 @@ public class AlphaMazeLevel2 implements AI {
 		bestScore = bestMoves.get(i).value;
 	    }
 	}
+
+	System.out.println("Current probability of winning: "+bestMoves.get(bestIndex).value/((double)simulationsPerNode)*100+"%");
+
 	return bestMoves.get(bestIndex).move;
     }
 

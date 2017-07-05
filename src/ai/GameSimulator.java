@@ -20,18 +20,19 @@ public class GameSimulator {
 	// create the ais
 	Map<Integer, AI> players = new HashMap<>();
 	players.put(1, new AlphaMazeLevel1(1, new ManhattanEvaluator(), 0.1));
+	//players.put(2, new AlphaMazeLevel1(1, new ManhattanEvaluator(), 0.1));
 	players.put(2, new AlphaMazeLevel2(2, new ManhattanEvaluator(), new ManhattanEvaluator(),
-					   10, 300,  0.1));
+					   10, 300, 10, 0.1));
 
 	GameSimulator simulator = new GameSimulator();
 	// simulate n games
-	System.out.println(simulator.simulate(players));
+	System.out.println(simulator.simulate(players, 10));
     }
 
     /**
      * Simulate N games in parallel.
      */
-    public Map<Integer, Integer> simulateN(int n, Map<Integer, AI> players) {
+    public Map<Integer, Integer> simulateN(int n, Map<Integer, AI> players, int maxMoves) {
 	// first, give each player a random treasure to look for
 	Map<Integer, TreasureType> currentTreasures = new HashMap<>();
 	// a list of all the treasures
@@ -49,7 +50,7 @@ public class GameSimulator {
 	    treasuresToGo.put(id, 24/players.size() + 1);
 	}
 	// simulate the game
-	return simulateN(n, players, new Board(), currentTreasures, new ArrayList<>(), treasuresToGo, 1);
+	return simulateN(n, players, new Board(), currentTreasures, new ArrayList<>(), treasuresToGo, 1, maxMoves);
     }
 
     /**
@@ -58,7 +59,7 @@ public class GameSimulator {
     public Map<Integer, Integer> simulateN(int n, Map<Integer, AI> players, Board board, 
 					  Map<Integer, TreasureType> currentTreasures, 
 					  List<TreasureType> foundTreasures,
-					  Map<Integer, Integer> treasuresToGo, int nextMove) {
+					   Map<Integer, Integer> treasuresToGo, int nextMove, int maxMoves) {
 	// a simulator will be run on every core
 	int cores = Runtime.getRuntime().availableProcessors();
 
@@ -75,11 +76,12 @@ public class GameSimulator {
 	    private List<TreasureType> foundTreasures;
 	    private Map<Integer, Integer> treasuresToGo;
 	    private int nextMove;
+	    private int maxMoves;
 
 	    public Simulator (int numberOfGames, Map<Integer, AI> players, Board board, 
 			      Map<Integer, TreasureType> currentTreasures, 
 			      List<TreasureType> foundTreasures,
-			      Map<Integer, Integer> treasuresToGo, int nextMove) {
+			      Map<Integer, Integer> treasuresToGo, int nextMove, int maxMoves) {
 		this.numberOfGames = numberOfGames;
 		this.players = players;
 		this.board = board;
@@ -87,6 +89,7 @@ public class GameSimulator {
 		this.foundTreasures = foundTreasures;
 		this.treasuresToGo = treasuresToGo;
 		this.nextMove = nextMove;
+		this.maxMoves = maxMoves;
 	    }
 	    
 	    /**
@@ -114,7 +117,7 @@ public class GameSimulator {
 		    
 		    // simulate a game
 		    int winnerID = GameSimulator.this.simulate(players, tmpBoard, tmpCurrentTreasures,
-							       tmpFoundTreasures, tmpTreasuresToGo, nextMove);
+							       tmpFoundTreasures, tmpTreasuresToGo, nextMove, maxMoves);
 		    
 		    // update the results
 		    res.put(winnerID, res.get(winnerID)+1);
@@ -132,7 +135,7 @@ public class GameSimulator {
 	for (int i = 0; i<cores; i++) {
 	    simulationResults.add(threadPool.submit(new Simulator(gamesPerThread, players, board, 
 								  currentTreasures, foundTreasures,
-								  treasuresToGo, nextMove)));
+								  treasuresToGo, nextMove, maxMoves)));
 	}
 
 	// now get the results
@@ -160,11 +163,12 @@ public class GameSimulator {
     /**
      * This method simulates a game on a random board.
      *
-     * @param players Each AI mapped to its playerID
+     * @param players  Each AI mapped to its playerID
+     * @param maxMoves The maximum number of moves to simulate
      *
      * @return The ID of the winning player
      */
-    public int simulate(Map<Integer, AI> players) {
+    public int simulate(Map<Integer, AI> players, int maxMoves) {
 	// first, give each player a random treasure to look for
 	Map<Integer, TreasureType> currentTreasures = new HashMap<>();
 	// a list of all the treasures
@@ -182,7 +186,7 @@ public class GameSimulator {
 	    treasuresToGo.put(id, 24/players.size() + 1);
 	}
 	// simulate the game
-	return simulate(players, new Board(), currentTreasures, new ArrayList<>(), treasuresToGo, 1);
+	return simulate(players, new Board(), currentTreasures, new ArrayList<>(), treasuresToGo, 1, maxMoves);
     }
 
     /**
@@ -194,12 +198,13 @@ public class GameSimulator {
      * @param foundTreasures   The treasures that have already been found
      * @param nextMove         The ID of the player who's turn is next
      * @param treasuresToGo    How many treasures does each player still have to find?
+     * @param maxMoves         The maximum number of moves that is to be simulated
      *
      * @return The ID of the winning player
      */
     public int simulate(Map<Integer, AI> players, Board board, Map<Integer, 
 			TreasureType> currentTreasures, List<TreasureType> foundTreasures, 
-			Map<Integer, Integer> treasuresToGo, int nextMove) {
+			Map<Integer, Integer> treasuresToGo, int nextMove, int maxMoves) {
 	// first get all available treasures
 	List<TreasureType> availableTreasures = getAllTreasures();
 	availableTreasures.removeAll(foundTreasures);
@@ -224,7 +229,7 @@ public class GameSimulator {
 	}
 
 	// the game loop
-	while (true) {
+	while (maxMoves > 0) {
 	    // let each player make a move
 	    for (int i=0; i<players.size(); i++) {
 		int currentID = Math.max((nextMove + i) % (players.size()+1), 1);
@@ -262,7 +267,21 @@ public class GameSimulator {
 		//System.out.println("Stack size of player "+currentID+": "+playerStacks.get(currentID).size());
 		//System.out.println(board);
 	    }
+
+	    // decrement the number of moves
+	    maxMoves--;
 	}
+	// no winner was found within the maxMoves moves simulated
+	// return the id corresponding to the player with the smallest stack
+	int winnerID = 0;
+	int smallestSize = Integer.MAX_VALUE;
+	for (int id: playerStacks.keySet()) {
+	    if (playerStacks.get(id).size() < smallestSize) {
+		winnerID = id;
+		smallestSize = playerStacks.get(id).size();
+	    }
+	}
+	return winnerID;
     }
 
     public static List<TreasureType> getAllTreasures() {
