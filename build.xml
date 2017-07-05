@@ -20,9 +20,11 @@
     <pathelement location="data" />
   </path>
   
-  <target name="init" >
+  <target name="init-dirs" >
     <mkdir dir="build" />
   </target>
+
+  <target name="init" depends="init-dirs, link-data" />
 
   <target name="compile" depends="init" >
     <javac classpathref="project.class.path" srcdir="src" destdir="build"
@@ -37,7 +39,7 @@
     <java fork="true" classpathref="project.class.path" classname="ai.GameSimulator" />
   </target>
 
-  <target name="clean" depends="init">
+  <target name="clean" depends="init, delete-links">
     <delete dir="build" />
   </target>
 
@@ -56,4 +58,25 @@
       <fileset dir="${build.path}" excludes="**/testcases/**" />
     </jar>
   </target>
+
+  <target name="link-data" unless="linksExist" >
+    <exec executable="ln" error="/dev/null" os="Linux">
+      <arg line="-sn" />
+      <arg file="./data" />
+      <arg file="./build/data" />
+    </exec>
+  </target>
+
+  <target name="test-links">
+    <condition property="linksExist">
+      <available file="./build/data" type="dir" />
+    </condition>
+  </target>
+
+  <target name="delete-links" depends="test-links" if="linksExist">
+    <exec executable="rm" error="/dev/null" os="Linux">
+      <arg file="./build/data" />
+    </exec>
+  </target>
+
 </project>
