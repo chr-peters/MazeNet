@@ -7,7 +7,7 @@ import java.util.Scanner;
 
 public class MazeNet {
     private static String host = "localhost";
-    private static String chosen_ai = "Manhattan";
+    private static String chosen_ai = "manhattan";
 
     private static void parseCommandLine(String[] args) {
 	if(args.length==1) {
@@ -49,7 +49,7 @@ public class MazeNet {
 		MoveMessageType move = ai.move(gameState);
 		double dt = System.currentTimeMillis() - t0;
 
-		System.out.println("Took me "+dt*1000+" seconds.");
+		System.out.println("Took me "+dt/1000.+" seconds.");
 
 		client.sendMove(move);
 
