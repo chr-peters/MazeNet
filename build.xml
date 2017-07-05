@@ -54,7 +54,7 @@
 
   <!-- create a runnable jar file -->
   <target name="archive-application" depends="compile, create-manifest">
-    <jar destfile="${build.path}/das_abelsche-softwarehaus.jar" manifest="${build.path}/MANIFEST.MF" >
+    <jar destfile="${build.path}/das_abelsche_softwarehaus.jar" manifest="${build.path}/MANIFEST.MF" >
       <fileset dir="${build.path}" excludes="**/testcases/**" />
     </jar>
   </target>
