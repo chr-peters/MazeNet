@@ -26,7 +26,7 @@ public class MazeNet {
 	try {
 	    parseCommandLine(args);
 
-	    Client client = new Client(host, 5123, "Alpha Maze");
+	    Client client = new Client(host, 5124, "Abel");
 
 	    int id = client.login();
 	    System.out.println("Started the game with ID =  " + id);
@@ -47,8 +47,9 @@ public class MazeNet {
 
 		double t0 = System.currentTimeMillis();
 		MoveMessageType move = ai.move(gameState);
-		double dt = System.currentTimeMillis()-t0;
-		System.out.println("Took me "+dt/1000+" seconds.");
+		double dt = System.currentTimeMillis() - t0;
+
+		System.out.println("Took me "+dt*1000+" seconds.");
 
 		client.sendMove(move);
 

@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.io.IOException;
 import java.io.StringWriter;
 
+import javax.net.ssl.SSLSocketFactory;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -37,7 +38,14 @@ public class Client {
     private int id;
     
     public Client(String ip, int port, String name) throws IOException, JAXBException {
-	this.socket = new Socket(ip, port);
+    // setup truststore to verify server-certificate
+    System.setProperty("javax.net.ssl.trustStore", "./data/ssl/truststore.jks");
+    System.setProperty("javax.net.ssl.trustStorePassword", "transformers");
+	
+    // create sslSocket
+    this.socket = SSLSocketFactory.getDefault().createSocket(ip, port);
+    
+    // socket without SSL: this.socket = new Socket(ip, port), where port = 5123 by default
 	this.name = name;
 	this.outStream = new UTFOutputStream(this.socket.getOutputStream());
 	this.isGameOver = false;
