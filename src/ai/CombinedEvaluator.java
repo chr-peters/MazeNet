@@ -11,13 +11,13 @@ public class CombinedEvaluator implements BoardEvaluator {
     /*
      * saves weights and evaluators
      */
-    public CombindedEvaluator(List<Double> wei, List<BoardEvaluator> eval) {
+    public CombinedEvaluator(List<Double> wei, List<BoardEvaluator> eval) {
 	if(wei.size()!=eval.size()) {
 	    System.err.println("number of weights and evaluators do not match");
 	    System.exit(1);
 	}
-	this.weight = wei;
-	this.evaluator = eval;
+	this.weights = wei;
+	this.evaluators = eval;
     }
 
     /*
