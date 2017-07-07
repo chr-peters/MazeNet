@@ -22,11 +22,11 @@ public class GameSimulator {
 	players.put(1, new AlphaMazeLevel1(1, new ManhattanEvaluator(), 0.1));
 	//players.put(2, new AlphaMazeLevel1(1, new ManhattanEvaluator(), 0.1));
 	players.put(2, new AlphaMazeLevel2(2, new ManhattanEvaluator(), new ManhattanEvaluator(),
-					   10, 300, 10, 0.1));
+					   20, 500, 15, 0.1));
 
 	GameSimulator simulator = new GameSimulator();
 	// simulate n games
-	System.out.println(simulator.simulate(players, 10));
+	System.out.println(simulator.simulate(players, Integer.MAX_VALUE));
     }
 
     /**
@@ -101,6 +101,7 @@ public class GameSimulator {
 	    public Map<Integer, Integer> call() {
 		Map<Integer, Integer> res = new HashMap<>();
 		// initialize the result
+		res.put(0, 0);
 		for (int id: players.keySet()) {
 		    res.put(id, 0);
 		}
@@ -140,6 +141,7 @@ public class GameSimulator {
 
 	// now get the results
 	Map<Integer, Integer> res = new HashMap<>();
+	res.put(0, 0);
 	for (int id: players.keySet()) {
 	    res.put(id, 0);
 	}
@@ -266,19 +268,30 @@ public class GameSimulator {
 		}
 		//System.out.println("Stack size of player "+currentID+": "+playerStacks.get(currentID).size());
 		//System.out.println(board);
+		
+		// decrement the number of moves
+		maxMoves--;
 	    }
-
-	    // decrement the number of moves
-	    maxMoves--;
 	}
 	// no winner was found within the maxMoves moves simulated
 	// return the id corresponding to the player with the smallest stack
 	int winnerID = 0;
 	int smallestSize = Integer.MAX_VALUE;
+	// set to true if more than one player has the smallest stack
+	boolean draw = false;
 	for (int id: playerStacks.keySet()) {
-	    if (playerStacks.get(id).size() < smallestSize) {
-		winnerID = id;
-		smallestSize = playerStacks.get(id).size();
+	    if (playerStacks.get(id).size() <= smallestSize) {
+		if (!draw && playerStacks.get(id).size() == smallestSize) {
+		    draw = true;
+		    winnerID = 0;
+		} else if (draw && playerStacks.get(id).size() < smallestSize) {
+		    winnerID = id;
+		    smallestSize = playerStacks.get(id).size();
+		    draw = false;
+		} else if (!draw && playerStacks.get(id).size() < smallestSize){
+		    winnerID = id;
+		    smallestSize = playerStacks.get(id).size();
+		}
 	    }
 	}
 	return winnerID;

@@ -34,10 +34,10 @@ public class MazeNet {
 	    // choose the correct AI
 	    AI ai;
 	    switch(chosen_ai) {
-	    case "manhattan": ai = new AlphaMazeLevel2(id, new ManhattanEvaluator(), new ManhattanEvaluator(), 7, 800, 15,  0.1); break;
-	    case "random": ai = new AlphaMazeLevel2(id, new RandomEvaluator(), new RandomEvaluator(), 7, 800, 15,  0.1); break;
-	    case "wall": ai = new AlphaMazeLevel2(id, new WallEvaluator(), new WallEvaluator(), 7, 800, 15, 0.1); break;
-	    default: ai = new AlphaMazeLevel2(id, new ManhattanEvaluator(), new ManhattanEvaluator(), 7, 800, 15, 0.1); break;
+	    case "manhattan": ai = new AlphaMazeLevel2(id, new ManhattanEvaluator(), new ManhattanEvaluator(), 20, 500, 15,  0.1); break;
+	    case "random": ai = new AlphaMazeLevel2(id, new RandomEvaluator(), new RandomEvaluator(), 20, 500, 15,  0.1); break;
+	    case "wall": ai = new AlphaMazeLevel2(id, new WallEvaluator(), new WallEvaluator(), 20, 500, 15, 0.1); break;
+	    default: ai = new AlphaMazeLevel2(id, new ManhattanEvaluator(), new ManhattanEvaluator(), 20, 500, 15, 0.1); break;
 	    }
 
 	    // beginning of the game loop

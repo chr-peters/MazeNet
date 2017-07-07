@@ -215,6 +215,7 @@ public class AlphaMazeLevel2 implements AI {
 									       tmpBoard, currentTreasures,
 									       foundTreasures, treasuresToGo,
 									       nextPlayer, movesPerSimulation);
+	    //System.out.println(simulationResults);
 	    curNode.value = simulationResults.get(this.playerID);
 	}
 
@@ -228,7 +229,7 @@ public class AlphaMazeLevel2 implements AI {
 	    }
 	}
 
-	System.out.println("Current probability of winning: "+bestMoves.get(bestIndex).value/((double)simulationsPerNode)*100+"%");
+	//System.out.println("Current probability of winning: "+bestMoves.get(bestIndex).value/((double)simulationsPerNode)*100+"%");
 
 	return bestMoves.get(bestIndex).move;
     }
