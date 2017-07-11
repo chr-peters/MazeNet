@@ -50,7 +50,7 @@ public class GameSimulator {
 	    treasuresToGo.put(id, 24/players.size() + 1);
 	}
 	// simulate the game
-	return simulateN(n, players, new Board(), currentTreasures, new ArrayList<>(), treasuresToGo, 1, maxMoves);
+	return simulateN(n, players, new Board(), currentTreasures, new ArrayList<>(), treasuresToGo, 1, maxMoves, 1);
     }
 
     /**
@@ -59,7 +59,7 @@ public class GameSimulator {
     public Map<Integer, Integer> simulateN(int n, Map<Integer, AI> players, Board board, 
 					  Map<Integer, TreasureType> currentTreasures, 
 					  List<TreasureType> foundTreasures,
-					   Map<Integer, Integer> treasuresToGo, int nextMove, int maxMoves) {
+					   Map<Integer, Integer> treasuresToGo, int nextMove, int maxMoves, int playerID) {
 	// a simulator will be run on every core
 	int cores = Runtime.getRuntime().availableProcessors();
 
@@ -118,7 +118,7 @@ public class GameSimulator {
 		    
 		    // simulate a game
 		    int winnerID = GameSimulator.this.simulate(players, tmpBoard, tmpCurrentTreasures,
-							       tmpFoundTreasures, tmpTreasuresToGo, nextMove, maxMoves);
+							       tmpFoundTreasures, tmpTreasuresToGo, nextMove, maxMoves, playerID);
 		    
 		    // update the results
 		    res.put(winnerID, res.get(winnerID)+1);
@@ -188,7 +188,7 @@ public class GameSimulator {
 	    treasuresToGo.put(id, 24/players.size() + 1);
 	}
 	// simulate the game
-	return simulate(players, new Board(), currentTreasures, new ArrayList<>(), treasuresToGo, 1, maxMoves);
+	return simulate(players, new Board(), currentTreasures, new ArrayList<>(), treasuresToGo, 1, maxMoves, 1);
     }
 
     /**
@@ -201,12 +201,13 @@ public class GameSimulator {
      * @param nextMove         The ID of the player who's turn is next
      * @param treasuresToGo    How many treasures does each player still have to find?
      * @param maxMoves         The maximum number of moves that is to be simulated
+     * @param playerID         The ID of the current player (due to the non-random treasures fix)
      *
      * @return The ID of the winning player
      */
     public int simulate(Map<Integer, AI> players, Board board, Map<Integer, 
 			TreasureType> currentTreasures, List<TreasureType> foundTreasures, 
-			Map<Integer, Integer> treasuresToGo, int nextMove, int maxMoves) {
+			Map<Integer, Integer> treasuresToGo, int nextMove, int maxMoves, int playerID) {
 	// first get all available treasures
 	List<TreasureType> availableTreasures = getAllTreasures();
 	availableTreasures.removeAll(foundTreasures);
@@ -228,6 +229,30 @@ public class GameSimulator {
 	    }
 	    // add the current treasure at the top
 	    playerStacks.get(id).push(currentTreasures.get(id));
+	}
+
+	/**
+	 * The following is a very dirty fix to prevent that each player is assigned the same starting
+	 * treasure for every simulation.
+	 * To fix this, all stacks are shuffeled, then the starting position is placed back at the bottom.
+	 * The treasure that is at the top is the new current treasure of the player.
+	 * 
+	 * Do this procedure for every player except for playerID - as this treasure is known with absolute
+	 * certainty.
+	 */
+
+	for (int id: players.keySet()) {
+	    if (id != playerID) {
+		// first remove the starting position (the last element down the stack)
+		TreasureType curStart = playerStacks.get(id).get(0);
+		playerStacks.get(id).removeElement(0);
+		// now shuffle the stack
+		Collections.shuffle(playerStacks.get(id));
+		// put the starting position back at the bottom
+		playerStacks.get(id).add(0, curStart);
+		// set the treasure at the top to be the new treasure
+		currentTreasures.put(id, playerStacks.get(id).peek());
+	    }
 	}
 
 	// the game loop

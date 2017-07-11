@@ -53,8 +53,8 @@ public class MazeNet {
 	    case "manhattan": ai = new AlphaMazeLevel2(id, new ManhattanEvaluator(), new ManhattanEvaluator(), 20, 500, 15,  0.1); break;
 	    case "random": ai = new AlphaMazeLevel2(id, new RandomEvaluator(), new RandomEvaluator(), 20, 500, 15,  0.1); break;
 	    case "wall": ai = new AlphaMazeLevel2(id, new WallEvaluator(), new WallEvaluator(), 20, 500, 15, 0.1); break;
-	    case "combined": ai = new AlphaMazeLevel2(id, new CombinedEvaluator(Arrays.asList(new Double [] {0.8, 0.2}), Arrays.asList(new BoardEvaluator[] {new ManhattanEvaluator(), new WallEvaluator()})), new ManhattanEvaluator(), 20, 500, 15, 0.1); break;
-	    default: ai = new AlphaMazeLevel2(id, new CombinedEvaluator(Arrays.asList(new Double [] {0.8, 0.2}), Arrays.asList(new BoardEvaluator[] {new ManhattanEvaluator(), new WallEvaluator()})), new ManhattanEvaluator(), 20, 500, 15, 0.1); break;
+	    case "combined": ai = new AlphaMazeLevel2(id, new CombinedEvaluator(Arrays.asList(new Double [] {0.8, 0.2}), Arrays.asList(new BoardEvaluator[] {new ManhattanEvaluator(), new WallEvaluator()})), new ManhattanEvaluator(), 20, 450, 15, 0.1); break;
+	    default: ai = new AlphaMazeLevel2(id, new CombinedEvaluator(Arrays.asList(new Double [] {0.8, 0.2}), Arrays.asList(new BoardEvaluator[] {new ManhattanEvaluator(), new WallEvaluator()})), new ManhattanEvaluator(), 20, 450, 15, 0.1); break;
 	    }
 
 	    // beginning of the game loop
@@ -76,9 +76,9 @@ public class MazeNet {
 		// used for time measurement
 		double t0 = System.currentTimeMillis();
 
-		// now start computing the move and wait a maximum of 15 seconds
+		// now start computing the move and wait a maximum of 18 seconds
 		aiThread.start();
-		aiThread.join(17000);
+		aiThread.join(18000);
 
 		// contains the move that is to be made
 		MoveMessageType curMove;
