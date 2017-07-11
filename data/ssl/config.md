@@ -19,7 +19,7 @@ SSL_CERT_STORE=./our_keystore.jks
 SSL_CERT_STORE_PASSWD=transformers
 
 # Wenn TESTBOARD = true ist, dann ist das Spielbrett bei jedem Start identisch (zum Debugging)
-TESTBOARD = true
+TESTBOARD = false
 # Hiermit lassen sich die Testfaelle anpassen (Pseudozufallszahlen)
 TESTBOARD_SEED = 0
 
