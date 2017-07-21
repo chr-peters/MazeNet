@@ -21,6 +21,9 @@ public class MazeNet {
     // the calculated move of the main AI
     private static MoveMessageType calculatedMove;
 
+    // the number of simulations for each core for each board to evaluate
+    private static int simulationsPerCore = 100;
+
     private static void parseCommandLine(String[] args) {
 	if(args.length==1) {
 	    if(args[0].toLowerCase().equals("localhost") || args[0].contains(".")) {
@@ -47,14 +50,17 @@ public class MazeNet {
 	    fallbackAI = new AlphaMazeLevel1(id, new CombinedEvaluator(Arrays.asList(new Double [] {0.8, 0.2}), Arrays.asList(new BoardEvaluator[] {
 			    new ManhattanEvaluator(), new WallEvaluator()})), 0.1);
 
+	    // get the number of cores
+	    int numberOfCores = Runtime.getRuntime().availableProcessors();
+
 	    // choose the correct AI
 	    AI ai;
 	    switch(chosen_ai) {
-	    case "manhattan": ai = new AlphaMazeLevel2(id, new ManhattanEvaluator(), new ManhattanEvaluator(), 20, 500, 15,  0.1); break;
-	    case "random": ai = new AlphaMazeLevel2(id, new RandomEvaluator(), new RandomEvaluator(), 20, 500, 15,  0.1); break;
-	    case "wall": ai = new AlphaMazeLevel2(id, new WallEvaluator(), new WallEvaluator(), 20, 500, 15, 0.1); break;
-	    case "combined": ai = new AlphaMazeLevel2(id, new CombinedEvaluator(Arrays.asList(new Double [] {0.8, 0.2}), Arrays.asList(new BoardEvaluator[] {new ManhattanEvaluator(), new WallEvaluator()})), new ManhattanEvaluator(), 20, 450, 15, 0.1); break;
-	    default: ai = new AlphaMazeLevel2(id, new CombinedEvaluator(Arrays.asList(new Double [] {0.8, 0.2}), Arrays.asList(new BoardEvaluator[] {new ManhattanEvaluator(), new WallEvaluator()})), new ManhattanEvaluator(), 20, 450, 15, 0.1); break;
+	    case "manhattan": ai = new AlphaMazeLevel2(id, new ManhattanEvaluator(), new ManhattanEvaluator(), 20, numberOfCores * simulationsPerCore, 15,  0.1); break;
+	    case "random": ai = new AlphaMazeLevel2(id, new RandomEvaluator(), new RandomEvaluator(), 20, numberOfCores * simulationsPerCore, 15,  0.1); break;
+	    case "wall": ai = new AlphaMazeLevel2(id, new WallEvaluator(), new WallEvaluator(), 20, numberOfCores * simulationsPerCore, 15, 0.1); break;
+	    case "combined": ai = new AlphaMazeLevel2(id, new CombinedEvaluator(Arrays.asList(new Double [] {0.8, 0.2}), Arrays.asList(new BoardEvaluator[] {new ManhattanEvaluator(), new WallEvaluator()})), new ManhattanEvaluator(), 20, numberOfCores * simulationsPerCore, 15, 0.1); break;
+	    default: ai = new AlphaMazeLevel2(id, new CombinedEvaluator(Arrays.asList(new Double [] {0.8, 0.2}), Arrays.asList(new BoardEvaluator[] {new ManhattanEvaluator(), new WallEvaluator()})), new ManhattanEvaluator(), 20, numberOfCores * simulationsPerCore, 15, 0.1); break;
 	    }
 
 	    // beginning of the game loop
@@ -99,8 +105,12 @@ public class MazeNet {
 		client.sendMove(curMove);
 
 		// now end the aiThread
-		if (aiThread.isAlive()) {
-		    aiThread.stop(); // yolo
+		try {
+		    if (aiThread.isAlive()) {
+			aiThread.stop(); // yolo
+		    }
+		} catch (Exception e) {
+		    // well, something went wrong... but who cares
 		}
 
 	    }
