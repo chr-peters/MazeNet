@@ -22,7 +22,7 @@ public class MazeNet {
     private static MoveMessageType calculatedMove;
 
     // the number of simulations for each core for each board to evaluate
-    private static int simulationsPerCore = 100;
+    private static int simulationsPerCore = 70;
 
     private static void parseCommandLine(String[] args) {
 	if(args.length==1) {
