@@ -258,8 +258,11 @@ public class GameSimulator {
 	// the game loop
 	while (maxMoves > 0) {
 	    // let each player make a move
-	    for (int i=0; i<players.size(); i++) {
-		int currentID = Math.max((nextMove + i) % (players.size()+1), 1);
+	    for (int i=0; i<players.size() && maxMoves > 0; i++) {
+		int currentID = nextMove + i;
+		if (currentID > players.size()) {
+		    currentID -= players.size();
+		}
 		
 		// update the current treasure on the board
 		board.setTreasure(playerStacks.get(currentID).peek());
