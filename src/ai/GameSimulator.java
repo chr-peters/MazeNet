@@ -227,8 +227,11 @@ public class GameSimulator {
 		playerStacks.get(id).push(availableTreasures.get(0));
 		availableTreasures.remove(0);
 	    }
-	    // add the current treasure at the top
-	    playerStacks.get(id).push(currentTreasures.get(id));
+
+	    if (treasuresToGo.get(id) > 1) {
+		// add the current treasure at the top
+		playerStacks.get(id).push(currentTreasures.get(id));
+	    }
 	}
 
 	/**

@@ -156,6 +156,7 @@ public class AlphaMazeLevel2 implements AI {
 	for(int id = 1; id<=numberOfPlayers; id++) {
 	    players.put(id, new AlphaMazeLevel1(id, this.simulationEvaluator, this.noiseFactor));
 	}
+
 	for (Node curNode: bestMoves) {
 	    // get the found treasures
 	    List<TreasureType> foundTreasures = new ArrayList<>();
